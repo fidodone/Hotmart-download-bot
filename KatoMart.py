@@ -6,6 +6,7 @@ import json
 import os
 import random
 import re
+import shlex
 import string
 import subprocess
 import sys
@@ -230,12 +231,10 @@ def getPlayerInfo(authMart, media):
     #     phtml.write(playerData)
 
     playerDom = BeautifulSoup(playerData, features="html.parser")
-    playerConfigurations = playerDom \
-        .find(text=re.compile("window.playerConfig"))[:-1]
-    playerConfigJson = playerConfigurations.split(" ", 2)[2]
-    playerInfo = json.loads(playerConfigJson)
+    playerConfigurations = playerDom.find(id="__NEXT_DATA__")
+    playerInfo = json.loads(playerConfigurations.get_text())
 
-    return playerInfo['player']
+    return playerInfo['props']['pageProps']['playerData']
 
 def baixarCurso(authMart, infoCurso, downloadAll):
     TEMP_FOLDER = criaTempFolder()
@@ -321,12 +320,12 @@ def baixarCurso(authMart, infoCurso, downloadAll):
 
                                     # TODO Melhorar esse workaround para nome longo
                                     if len(videoPath) > 254:
-                                        videosLongos += 1
+                                        videoPath = videoPath[0:242] + "/aula-1.mp4"
 
                                     success = None
 
                                     if not os.path.isfile(videoPath):
-                                        success = downloadVideoNativo(authMart, TEMP_FOLDER, NOME_MODULO, NOME_AULA, playerInfo, asset)
+                                        success = downloadVideoNativo(authMart, TEMP_FOLDER, NOME_MODULO, NOME_AULA, playerInfo, asset, videoPath)
                                     else:
                                         print("VIDEO JA EXISTE")
                                         success = True
@@ -601,7 +600,7 @@ def downloadVideoExterno(pathCurso, pathAula, nomeCurso, nomeModulo, NomeAula, i
     return vidCount, videosLongos, videosInexistentes
 
 
-def downloadVideoNativo(authMart, tempFolder, nomeModulo, nomeAula, playerInfo, asset):
+def downloadVideoNativo(authMart, tempFolder, nomeModulo, nomeAula, playerInfo, asset, aulaPath):
     try:
         videoData = authMart.get(
             f"{asset['url']}?{playerInfo['cloudFrontSignature']}")
@@ -645,7 +644,8 @@ def downloadVideoNativo(authMart, tempFolder, nomeModulo, nomeAula, playerInfo, 
             # ffmpegcmd = f'ffmpeg -hide_banner -loglevel error -v quiet -stats -allowed_extensions ALL -hwaccel cuda -i {tempFolder}/dump.m3u8 -c:v h264_nvenc -n "{aulaPath}"'
 
             ffmpegcmd = f'ffmpeg -hide_banner -loglevel error -v quiet -stats -allowed_extensions ALL -i {tempFolder}/dump.m3u8 -n "{aulaPath}"'
-
+            cmd = shlex.split(ffmpegcmd)
+            
             if sys.platform.startswith('darwin'):
                 # MacOs specific procedures
                 subprocess.run(
@@ -659,6 +659,7 @@ def downloadVideoNativo(authMart, tempFolder, nomeModulo, nomeAula, playerInfo, 
                 # if p.returncode != 0:
                 #     pass
 
+            p = subprocess.run(cmd, capture_output=True, text = True)
             print(
                 f"Download da aula {Colors.Bold}{Colors.Magenta}{nomeModulo}/{nomeAula}{Colors.Reset} {Colors.Green}concluído{Colors.Reset}!")
             time.sleep(3)
