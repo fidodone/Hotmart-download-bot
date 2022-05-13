@@ -14,7 +14,7 @@ import time
 
 import m3u8
 import requests
-import youtube_dl
+import yt_dlp
 
 from bs4 import BeautifulSoup
 from requests import HTTPError, Timeout
@@ -252,7 +252,7 @@ def baixarCurso(authMart, infoCurso, downloadAll):
     DOMINIO = infoCurso['resource']['subdomain']
     URL = f"https://{DOMINIO}.club.hotmart.com/"
 
-    youtube_dl.utils.std_headers['Referer'] = URL
+    yt_dlp.utils.std_headers['Referer'] = URL
 
     authMart.headers['accept'] = CONTENT_TYPE
     authMart.headers['origin'] = URL
@@ -575,7 +575,7 @@ def downloadVideoExterno(pathCurso, pathAula, nomeCurso, nomeModulo, NomeAula, i
                     print(f"{Colors.Magenta}Baixando aula externa de fonte: {fonteExterna}!")
 
                     try:
-                        with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+                        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                             ydl.download([videoLink])
                         vidCount += 1
 
