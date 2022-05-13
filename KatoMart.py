@@ -643,7 +643,9 @@ def downloadVideoNativo(authMart, tempFolder, nomeModulo, nomeAula, playerInfo, 
             # TODO Implementar verificação de hardware acceleration
             # ffmpegcmd = f'ffmpeg -hide_banner -loglevel error -v quiet -stats -allowed_extensions ALL -hwaccel cuda -i {tempFolder}/dump.m3u8 -c:v h264_nvenc -n "{aulaPath}"'
 
-            ffmpegcmd = f'ffmpeg -hide_banner -loglevel error -v quiet -stats -allowed_extensions ALL -i {tempFolder}/dump.m3u8 -n "{aulaPath}"'
+            #ffmpegcmd = f'ffmpeg -hide_banner -loglevel error -v quiet -stats -allowed_extensions ALL -i {tempFolder}/dump.m3u8 -n "{aulaPath}"'
+            # alterado pra apenas juntar os arquivos sem encodar - em TESTES
+            ffmpegcmd = f'ffmpeg -stats -allowed_extensions ALL -i {tempFolder}/dump.m3u8 -acodec copy -vcodec copy "{aulaPath}"'
             cmd = shlex.split(ffmpegcmd)
             
             if sys.platform.startswith('darwin'):
