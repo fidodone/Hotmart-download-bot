@@ -614,6 +614,7 @@ def downloadVideoNativo(authMart, tempFolder, nomeModulo, nomeAula, playerInfo, 
         for playlist in masterPlaylist.playlists:
             if playlist.stream_info.resolution == res[0]:
                 highestQual = playlist.uri
+                print(highestQual)
         if highestQual is not None:
             videoData = authMart.get(
                 f"{asset['url'][:asset['url'].rfind('/')]}/{highestQual}?{playerInfo['cloudFrontSignature']}")
